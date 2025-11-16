@@ -1,4 +1,8 @@
 import java.awt.*;
+import java.util.HexFormat;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.Scanner;
 import java.io.File;
 import javax.swing.JFileChooser;
@@ -6,9 +10,9 @@ import javax.swing.JFileChooser;
 public class FileMonitorApp  {
 Scanner sc = new Scanner(System.in);
 int choice = 0;
+JFileChooser chooser = new JFileChooser();
 
-public static String getFileName(){
-    JFileChooser chooser = new JFileChooser();
+public String getFileName(){
     chooser.setDialogTitle("Choose a file");
     int result = chooser.showOpenDialog(null);
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -23,8 +27,26 @@ public static String getFileName(){
     }
 }
 
-public void FileMonitor (){
- getFileName();
+public static String fileHash(String filePath) throws Exception {
+   var fContent = Files.readAllBytes(Paths.get(filePath));
+   var digest = MessageDigest.getInstance("SHA-256");
+   var hashBytes = digest.digest(fContent);
+   return HexFormat.of().formatHex(hashBytes);
+}
+
+public void FileMonitor () throws Exception {
+
+ String file = getFileName();
+ var fHash = fileHash(file);
+ System.out.println("File Path: " + file + " " + "Hash: " + fHash);
+ File hashes = new File("fHashes.txt");
+    if (hashes.createNewFile()) {
+        System.out.println("File created: " + hashes.getName());
+    } else {
+        System.out.println("File already exists.");
+    }
+
+    // Write Code that ensures if the file is already created, it will continue adding hashes to the text file.
 }
 
 public void FileIntegrity (){
@@ -36,7 +58,7 @@ public void MonitoredFiles(){
 }
 
 
-public void menu(){
+public void menu() throws Exception {
     do {
         {
           System.out.print(
@@ -74,7 +96,7 @@ public void menu(){
         }
     } while (choice != 4);
 }
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         FileMonitorApp app = new FileMonitorApp();
         app.menu();
     }
